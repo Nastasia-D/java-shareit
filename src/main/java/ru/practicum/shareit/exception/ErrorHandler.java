@@ -46,8 +46,9 @@ public class ErrorHandler {
                 "Некорректное значение параметра", e.getReason()
         );
     }
+
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleConflictException(final ConflictException e) {
         log.error("Конфликт данных: {}", e.getMessage());
         return new ErrorResponse(
