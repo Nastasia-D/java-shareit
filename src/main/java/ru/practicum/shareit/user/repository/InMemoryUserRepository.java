@@ -26,6 +26,7 @@ public class InMemoryUserRepository implements UserRepository {
 
         user.setId(++idCounter);
         users.put(user.getId(), user);
+        emails.add(user.getEmail());
         return user;
     }
 
@@ -37,7 +38,17 @@ public class InMemoryUserRepository implements UserRepository {
             existingUser.setName(user.getName());
         }
         if (user.getEmail() != null && !user.getEmail().isBlank()) {
-            existingUser.setEmail(user.getEmail());
+            String newEmail = user.getEmail();
+            String oldEmail = existingUser.getEmail();
+            if (!newEmail.equalsIgnoreCase(oldEmail)) {
+                if (emails.contains(user.getEmail())) {
+                    throw new ConflictException("Email уже занят");
+                }
+                emails.remove(oldEmail);
+                emails.add(newEmail);
+                existingUser.setEmail(newEmail);
+
+            }
         }
         return existingUser;
     }
