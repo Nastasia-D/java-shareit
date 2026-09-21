@@ -5,15 +5,16 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.item.comment.dto.CommentOutDto;
 
-/**
- * TODO Sprint add-controllers.
- */
+import java.util.List;
+
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ItemDto {
+public class ItemBookingDto {
     private Long id;
     @NotBlank(message = "Имя не может быть пустым")
     private String name;
@@ -23,4 +24,7 @@ public class ItemDto {
     private Boolean available;
     private Long ownerId;
     private Long requestId;
+    private BookingDto lastBooking;
+    private BookingDto nextBooking;
+    private List<CommentOutDto> comments;
 }
