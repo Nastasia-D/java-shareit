@@ -65,4 +65,13 @@ public class ErrorHandler {
                 "Конфликт данных", "Пользователь с таким email уже существует"
         );
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorResponse handleForbiddenException(final ForbiddenException e) {
+        log.error("Отказ в доступе: {}", e.getMessage());
+        return new ErrorResponse(
+                "Доступ запрещён", e.getMessage()
+        );
+    }
 }

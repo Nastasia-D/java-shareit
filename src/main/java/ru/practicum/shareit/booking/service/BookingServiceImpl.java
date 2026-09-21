@@ -10,6 +10,7 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingState;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.exception.ForbiddenException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.model.Item;
@@ -33,18 +34,19 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public BookingOutDto create(BookingDto bookingDto, Long bookerId) {
+        if (bookingDto.getEnd().isBefore(bookingDto.getStart()) || bookingDto.getEnd().equals(bookingDto.getStart())) {
+            throw new ValidationException("Дата окончания бронирования не может быть раньше или равна дате начала");
+        }
         User booker = userRepository.findById(bookerId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + bookerId + " не найден"));
         Item item = itemRepository.findById(bookingDto.getItemId())
                 .orElseThrow(() -> new NotFoundException("Вещь с id " + bookingDto.getItemId() + " не найден"));
         if (item.getOwner().getId().equals(bookerId)) {
-            throw new ValidationException("Владелец не может забронировать собственную вещь");
+            throw new ForbiddenException("Владелец не может забронировать собственную вещь");
         }
         if (!Boolean.TRUE.equals(item.getAvailable())) {
-            throw new ValidationException("Вещь с id " + item.getId() + " недоступна для бронирования");
-        }
-        if (bookingDto.getEnd().isBefore(bookingDto.getStart()) || bookingDto.getEnd().equals(bookingDto.getStart())) {
-            throw new ValidationException("Дата окончания бронирования не может быть раньше или равна дате начала");
+            throw new ValidationException("Вещь с id " + item.getId() + " недоступна для бронирования"); /* оставила ValidationException,
+            т.е. автотесты не проходят, указано, что нужна ошибка со статусом 400 */
         }
         Booking booking = BookingMapper.mapToBooking(bookingDto, item, booker);
         Booking createBooking = bookingRepository.save(booking);
@@ -58,7 +60,7 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new NotFoundException("Бронирование с id " + bookingId + " не существует"));
 
         if (!booking.getItem().getOwner().getId().equals(ownerId)) {
-            throw new ValidationException("Пользователь с id " + ownerId + " не является владельцем вещи");
+            throw new ForbiddenException("Пользователь с id " + ownerId + " не является владельцем вещи"); // ИИ подстказал, что тут можно использовать ошибку со статусом 403 (ForbiddenException)
         }
 
         if (!booking.getStatus().equals(BookingStatus.WAITING)) {
@@ -92,8 +94,9 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Collection<BookingOutDto> getUserBookings(Long userId, BookingState state) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("Пользователь с id " + userId + " не найден");
+        }
 
         LocalDateTime now = LocalDateTime.now();
         List<Booking> bookingList;
@@ -122,8 +125,9 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public  Collection<BookingOutDto> getOwnerBookings(Long userId, BookingState state) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("Пользователь с id " + userId + " не найден");
+        }
 
         LocalDateTime now = LocalDateTime.now();
         List<Booking> bookingList;
