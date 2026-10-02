@@ -75,7 +75,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "WHERE b.booker.id = :bookerId " +
             "AND b.item.id = :itemId " +
             "AND b.status = :status " +
-            "AND b.end < :now")
+            "AND b.end <= :now")
     List<Booking> findCompletedBookings(
             @Param("bookerId") Long bookerId,
             @Param("itemId") Long itemId,

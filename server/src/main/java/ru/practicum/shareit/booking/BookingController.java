@@ -26,9 +26,9 @@ public class BookingController {
     }
 
     @PatchMapping("/{bookingId}")
-    public BookingOutDto approved(@PathVariable Long bookingId, @RequestHeader("X-Sharer-User-Id") Long ownerId, @RequestParam Boolean approved) {
+    public BookingOutDto approved(@PathVariable("bookingId") Long bookingId, @RequestHeader("X-Sharer-User-Id") Long ownerId, @RequestParam("approved") Boolean approved) {
         log.info("Получен запрос на подтверждение (approved={}) бронирования {} от пользователя {}", approved, bookingId, ownerId);
-        return bookingService.approved(bookingId, ownerId, approved);
+        return bookingService.approved(ownerId, bookingId, approved);
     }
 
     @GetMapping("/{bookingId}")

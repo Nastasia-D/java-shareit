@@ -1,5 +1,5 @@
 package ru.practicum.shareit.item;
-import lombok.RequiredArgsConstructor;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.comment.dto.CommentDto;
@@ -17,9 +17,12 @@ import java.util.Collection;
 @Slf4j
 @RestController
 @RequestMapping("/items")
-@RequiredArgsConstructor
 public class ItemController {
     private final ItemService itemService;
+
+    public ItemController(ItemService itemService) {
+        this.itemService = itemService;
+    }
 
     @GetMapping("/{itemId}")
     public ItemBookingDto findById(@PathVariable Long itemId, @RequestHeader("X-Sharer-User-Id") Long userId) {
@@ -46,7 +49,7 @@ public class ItemController {
     }
 
     @PostMapping("/{itemId}/comment")
-    public CommentOutDto addComment(@RequestHeader("X-Sharer-User-Id") Long userId, @PathVariable Long itemId, @RequestBody CommentDto commentDto) {
+    public CommentOutDto addComment(@RequestHeader("X-Sharer-User-Id") Long userId, @PathVariable("itemId") Long itemId, @RequestBody CommentDto commentDto) {
         log.info("Пользователь {} оставил комментарий {} к вещи {}", userId, commentDto, itemId);
         return itemService.addComment(userId, itemId, commentDto);
     }

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.request.ItemRequestService;
@@ -15,10 +16,11 @@ import ru.practicum.shareit.request.dto.ItemRequestOutDto;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Transactional
 @SpringBootTest(
@@ -53,11 +55,92 @@ public class ItemRequestServiceImplTest {
 
     }
 
+    @Test
+    void createItemRequest_WhenUserNotFound() {
+        ItemRequestDto requestDto = saveItemRequestDto("Нужна дрель");
+        assertThrows(NotFoundException.class, () -> itemRequestService.create(requestDto, 999L));
+    }
+
     private User saveUser(String name, String email) {
         User user = new User();
         user.setEmail(email);
         user.setName(name);
         return user;
+    }
+
+    @Test
+    void findByIdTest() {
+        User requester = saveUser("user@email.com", "Пользователь");
+        em.persist(requester);
+
+        ItemRequest request = saveItemRequest("Нужен шуруповерт", requester, LocalDateTime.now());
+        em.persist(request);
+        em.flush();
+
+        ItemRequestOutDto found = itemRequestService.findById(request.getId(), requester.getId());
+
+        assertThat(found, notNullValue());
+        assertThat(found.getId(), equalTo(request.getId()));
+        assertThat(found.getDescription(), equalTo("Нужен шуруповерт"));
+    }
+
+    @Test
+    void findById_WhenUserNotFound() {
+        assertThrows(NotFoundException.class, () -> itemRequestService.findById(1L, 999L));
+    }
+
+    @Test
+    void findById_WhenRequestNotFound() {
+        User user = saveUser("user@email.com", "Пользователь");
+        em.persist(user);
+        em.flush();
+
+        assertThrows(NotFoundException.class, () -> itemRequestService.findById(999L, user.getId()));
+    }
+
+    @Test
+    void getUserRequestsTest() {
+        User requester = saveUser("user@email.com", "Пользователь");
+        em.persist(requester);
+
+        ItemRequest request = saveItemRequest("Нужна палатка", requester, LocalDateTime.now());
+        em.persist(request);
+
+        User owner = saveUser("owner@email.com", "Владелец");
+        em.persist(owner);
+
+        Item item = saveItem("Палатка 3-местная", "Большая", true, owner, request.getId());
+        em.persist(item);
+        em.flush();
+
+        List<ItemRequestOutDto> requests = itemRequestService.getUserRequests(requester.getId());
+
+        assertThat(requests, hasSize(1));
+        assertThat(requests.get(0).getItems(), hasSize(1));
+        assertThat(requests.get(0).getItems().get(0).getName(), equalTo("Палатка 3-местная"));
+    }
+
+    @Test
+    void getUserRequests_WhenUserNotFound() {
+        assertThrows(NotFoundException.class, () -> itemRequestService.getUserRequests(999L));
+    }
+
+    @Test
+    void getAllRequestsTest() {
+        User requester = saveUser("user@email.com", "Пользователь");
+        em.persist(requester);
+
+        User otherUser = saveUser("other@email.com", "Другой");
+        em.persist(otherUser);
+
+        ItemRequest request = saveItemRequest("Нужен велосипед", otherUser, LocalDateTime.now());
+        em.persist(request);
+        em.flush();
+
+        List<ItemRequestOutDto> requests = itemRequestService.getAllRequests(requester.getId());
+
+        assertThat(requests, hasSize(1));
+        assertThat(requests.get(0).getDescription(), equalTo("Нужен велосипед"));
     }
 
     private ItemRequest saveItemRequest(String description, User requestor, LocalDateTime created) {
