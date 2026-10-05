@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.shareit.ItemRequestDto;
 
+import java.time.Duration;
+
 @Service
 public class ItemRequestClient extends BaseClient {
     private static final String API_PREFIX = "/requests";
@@ -18,7 +20,9 @@ public class ItemRequestClient extends BaseClient {
         super(
                 builder
                         .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl + API_PREFIX))
-                        .requestFactory(() -> new HttpComponentsClientHttpRequestFactory())
+                        .requestFactory(HttpComponentsClientHttpRequestFactory.class)
+                        .setConnectTimeout(Duration.ofSeconds(5))
+                        .setReadTimeout(Duration.ofSeconds(5))
                         .build()
         );
     }

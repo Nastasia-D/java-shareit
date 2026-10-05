@@ -7,15 +7,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.client.ItemClient;
 
-/**
- * TODO Sprint add-controllers.
- */
-
 @Slf4j
 @RestController
 @RequestMapping("/items")
 @RequiredArgsConstructor
-public class ItemControllerGateway {
+public class ItemController {
     private final ItemClient itemClient;
 
     @GetMapping("/{itemId}")

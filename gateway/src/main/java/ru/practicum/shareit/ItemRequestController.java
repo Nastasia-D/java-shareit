@@ -6,14 +6,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.client.ItemRequestClient;
 
-/**
- * TODO Sprint add-item-requests.
- */
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(path = "/requests")
-public class ItemRequestControllerGateway {
+public class ItemRequestController {
 
     private final ItemRequestClient itemRequestClient;
 

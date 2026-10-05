@@ -20,7 +20,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = BookingControllerGateway.class)
+@WebMvcTest(controllers = BookingController.class)
 @ContextConfiguration(classes = ShareItGateway.class)
 public class BookingControllerGatewayTest {
 

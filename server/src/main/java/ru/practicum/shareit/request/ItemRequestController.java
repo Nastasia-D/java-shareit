@@ -8,9 +8,6 @@ import ru.practicum.shareit.request.dto.ItemRequestOutDto;
 
 import java.util.List;
 
-/**
- * TODO Sprint add-item-requests.
- */
 @Slf4j
 @RestController
 @RequiredArgsConstructor
